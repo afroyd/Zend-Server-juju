@@ -20,5 +20,5 @@ if [ -n "$licenseKey" ]; then
 	bootstrap="$bootstrap -o  $orderNumber -l $licenseKey"
 fi
 juju-log "Will bootstrap Zend server with $bootstrap"
-`$bootstrap`
+eval $bootstrap
 /usr/local/zend/bin/zs-manage  restart-php -N $adminKey -K $adminKeyHash
