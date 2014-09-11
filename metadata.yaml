@@ -11,7 +11,7 @@ requires:
     interface: mysql
 provides:
     website:
-    interface: http
+     interface: http
 peers:
   cluster:
     interface: mysql

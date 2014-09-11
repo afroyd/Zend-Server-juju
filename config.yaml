@@ -1,14 +1,25 @@
 options:
-  string-option:
+  phpVersion:
     type: string
-    default: "Default Value"
-    description: "A short description of the configuration option"
-  boolean-option:
+    default: "5.5"
+    description: "Zend server PHP version"
+  adminKeyHash:
+    type: string
+    default: ""
+    description: "webapi key hash for communicating with the webapi"
+  guiPassword: 
+    type: string
+    default: "1234"
+    description: "password for the admin gui interface"
+  orderNumber:
+    type: string
+    default: "iic"
+    description: "order number matching the Zend server license key"
+  licenseKey:
+    type: string
+    default: "ICTO7340801G21B2611D1CB5FCC4DA78"
+    description: "Zend server License key matching the order number"
+  production:
     type: boolean
-    default: False
-    description: "A short description of the configuration option"
-  int-option:
-    type: int
-    default: 9001
-    description: "A short description of the configuration option"
-
+    default: false
+    description: "set to true to get production settings. False will give you development settings and will enable Z-ray by default"
