@@ -1,0 +1,4 @@
+#!/bin/bash
+set -e # If any command fails, stop execution of the hook with that error
+./install_zs.sh 5.5 --automatic
+/usr/local/zend/bin/zs-manage api-keys-add-key -n adminKey -s 272ecef777053df1858d097a20b4eedb29f22afa818f81dcfca1ce580bc24fcf

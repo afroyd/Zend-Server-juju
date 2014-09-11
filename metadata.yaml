@@ -1,0 +1,17 @@
+name: zend-server
+summary: <Fill in summary here>
+maintainer: Amir Friedman <amir@zend.com>
+description: |
+    Zend Server is an integrated platform for mobile and web apps, helping in all phases of the application life cycle
+categories:
+    - app-servers
+subordinate: false
+requires:
+  database:
+    interface: mysql
+provides:
+    website:
+    interface: http
+peers:
+  cluster:
+    interface: mysql
