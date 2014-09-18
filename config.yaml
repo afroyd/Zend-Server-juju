@@ -3,9 +3,13 @@ options:
     type: string
     default: "5.5"
     description: "Zend server PHP version"
+  adminKey:
+    type: string
+    default: "adminKey"
+    description: "The gui webapi key with admin permissions that is added to the system and used to execute admin task like bootstrap and restart"
   adminKeyHash:
     type: string
-    default: ""
+    default: "f13b874b8eac6aebb8f0244716f97dc02adf12bf10ced201771e755c4691923e"
     description: "webapi key hash for communicating with the webapi"
   guiPassword: 
     type: string

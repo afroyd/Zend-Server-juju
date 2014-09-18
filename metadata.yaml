@@ -8,7 +8,7 @@ categories:
 subordinate: false
 requires:
   database:
-    interface: mysql
+    interface: mysql-root 
 provides:
     website:
      interface: http

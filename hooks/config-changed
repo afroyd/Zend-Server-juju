@@ -1,36 +1,9 @@
-#!/usr/bin/python
-
-import os
-import sys
-
-sys.path.insert(0, os.path.join(os.environ['CHARM_DIR'], 'lib'))
-
-from charmhelpers.core import (
-    hookenv,
-    host,
-)
-
-from start import start
-
-hooks = hookenv.Hooks()
-log = hookenv.log
-
-SERVICE = 'zend-server'
-
-
-@hooks.hook('config-changed')
-def config_changed():
-    config = hookenv.config()
-
-    for key in config:
-        if config.changed(key):
-            log("config['{}'] changed from {} to {}".format(
-                key, config.previous(key), config[key]))
-
-    config.save()
-    start()
-
-
-if __name__ == "__main__":
-    # execute a hook based on the name the program is called by
-    hooks.execute(sys.argv)
+#!/bin/bash
+set -e # If any command fails, stop execution of the hook with that error
+adminKey=`config-get adminKey`
+adminKeyHash=`config-get adminKeyHash`
+/usr/local/zend/bin/zs-manage  restart-php -N $adminKey -K $adminKeyHash
+#php bin/zs-client.php installApp --zpk="<location-of-the-zpk-file>" --target="<the-name-of-the-target>" --baseUri="<baseUri>"
+open-port 80
+open-port 10082
+open-port 10081
