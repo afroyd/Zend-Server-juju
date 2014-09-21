@@ -8,6 +8,7 @@ adminKeyHash=`relation-get adminKeyHash`
 adminKey=`relation-get adminKey`
 magento_admin_password="1234"
 magento_admin_email="admin@localhost.com"
+port=80
 if [ -z "$adminKeyHash" ]; then
 	juju-log "No Zend server admin webapi key set by peer relation getting the key from the config"
 	adminKey=`config-get adminKey`
@@ -19,9 +20,17 @@ if [ -z "$db_db" ]; then
 fi
 private_address=`unit-get private-address`
 public_address=`unit-get public-address`
-app_url="http://$public_address/magento"
-#/usr/local/zend/bin/zs-client.sh installApp --appPackage="magento-1.7.zpk" --baseUri="$app_url" --userParams="site_url="$app_url"\&db_host="$db_host"\&db_username="$db_user"\&db_password="$db_pass"\&db_name="$db_db"\&admin_password="$magento_admin_password"\&admin_email="$magento_admin_email"" --zskey="$adminKey" --zssecret="$adminKeyHash"
-#$deploy="/usr/local/zend/bin/zs-manage app-deploy --pkgFile "files/magento-1.7.zpk" --baseUrl "$app_url" --userParams "site_url="$app_url" db_host="$db_host" db_username="$db_user"db_password="$db_pass" db_name="$db_db" admin_password="$magento_admin_password""  -N $adminKey -K $adminKeyHash"
+juju-log "Adding vhost $public_address"
+/usr/local/zend/bin/zs-manage vhost-add -n $public_address -p $port -N $adminKey -K $adminKeyHash
+app_url="http://$public_address/demo"
+#/usr/local/zend/bin/zs-client.sh installApp --appPackage="demo.zpk" --baseUri="$app_url" --zskey="$adminKey" --zssecret="$adminKeyHash" || true
+deploy="/usr/local/zend/bin/zs-manage app-deploy --pkgFile "files/demo.zpk" --baseUrl "$app_url"  -N $adminKey -K $adminKeyHash"
+juju-log "deploying demo application on Zend Server with $deploy command"
+eval $deploy
+app_url="http://$public_address/magento" 
+#/usr/local/zend/bin/zs-client.sh installApp --appPackage="magento-1.7.zpk" --baseUri="$app_url" --userParams="site_url="$app_url"\&db_host="$db_host"\&db_username="$db_user"\&db_password="$db_pass"\&db_name="magento"\&admin_password="$magento_admin_password"\&admin_email="$magento_admin_email"" --zskey="$adminKey" --zssecret="$adminKeyHash"
+sudo sed -i 's/memory_limit = .*M   /memory_limit = 789M   /g' /usr/local/zend/gui/lighttpd/etc/php-fcgi.ini
+deploy="/usr/local/zend/bin/zs-manage app-deploy --pkgFile "files/magento-1.7.zpk" --baseUrl "$app_url" --userParams \"site_url="$app_url" db_host="$db_host" db_username="$db_user" db_password="$db_pass" db_name="magento" admin_password="$magento_admin_password"\"  -N $adminKey -K $adminKeyHash"
 juju-log "deploying application on Zend Server with $deploy command"
 eval $deploy
 add_command="/usr/local/zend/bin/zs-manage server-add-to-cluster -n $JUJU_UNIT_NAME-$public_address -i $private_address  -o $db_host -u $db_user -p $db_pass -d ZendServer -r 60 -w 5 -s -N $adminKey -K $adminKeyHash"
