@@ -1,7 +1,7 @@
 #!/bin/bash
 set -e # If any command fails, stop execution of the hook with that error
 db_user=`relation-get user`
-db_db=`relation-get database`
+#db_db=`relation-get database`
 db_pass=`relation-get password`
 db_host=`relation-get private-address`
 adminKeyHash=`relation-get adminKeyHash`
@@ -14,7 +14,7 @@ if [ -z "$adminKeyHash" ]; then
 	adminKey=`config-get adminKey`
 	adminKeyHash=`config-get adminKeyHash`
 fi
-if [ -z "$db_db" ]; then
+if [ -z "$db_pass" ]; then
   juju-log "No database information sent yet. Silently exiting"
   exit 0
 fi
@@ -30,8 +30,10 @@ if [[ ! -z "`mysql -u"$db_user" -p"$db_pass" -h "$db_host" -qfsBe "SELECT SCHEMA
 then
   juju-log "magento DATABASE ALREADY EXISTS will not proceed with installing apps"
 else
+  juju-log "Enabling Zend server Session Clustering"
   /usr/local/zend/bin/zs-manage store-directive -d 'zend_sc.ha.use_broadcast' -v '0' -N "$adminKey" -K "$adminKeyHash"
-  /usr/local/zend/bin/zs-manage store-directive -d 'session.save_handler' -v 'cluster' -N "$adminKey" -K "$adminKeyHash"
+#  /usr/local/zend/bin/zs-manage store-directive -d 'session.save_handler' -v 'cluster' -N "$adminKey" -K "$adminKeyHash"
+  /usr/local/zend/bin/zs-manage store-directive -d 'zend_sc.enable' -v '1' -N "$adminKey" -K "$adminKeyHash"
   juju-log "No Magento DB. Installing the apps"
   app_url="http://$public_address/magento" 
   sudo sed -i 's/memory_limit = .*M   /memory_limit = 789M   /g' /usr/local/zend/gui/lighttpd/etc/php-fcgi.ini

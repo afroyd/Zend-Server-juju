@@ -13,9 +13,7 @@ if [ -z "$adminKeyHash" ]; then
 	relation-set -r $JUJU_RELATION_ID adminKeyHash=$adminKeyHash adminKey=$adminKey
 fi
 juju-log "using Zend server webapi key name '$adminKey' and webapi key hash $adminKeyHash"
-#tar xzf files/repo_installer_6.3.com.tar.gz
-#tar xzf files/repo_installer_nightly_cloud_repo.tar.gz
-tar xzf files/repo_installer_power.tar.gz
+tar xzf files/repo_installer_early_access.tar.gz
 ./install_zs.sh $phpVersion --automatic
 /usr/local/zend/bin/zs-manage api-keys-add-key -n $adminKey -s $adminKeyHash
 bootstrap="/usr/local/zend/bin/zs-manage bootstrap-single-server -p $guiPassword -a TRUE   -r $production "
@@ -37,3 +35,6 @@ open-port 80
 open-port 443
 open-port 10082
 open-port 10081
+open-port 10060
+open-port 10063
+open-port 10070/udp
