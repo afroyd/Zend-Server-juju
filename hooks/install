@@ -21,6 +21,7 @@ if [ -n "$licenseKey" ]; then
 	bootstrap="$bootstrap -o  $orderNumber -l $licenseKey"
 fi
 juju-log "Will bootstrap Zend server with $bootstrap and retry"
+set +e
 n=0
 until [ $n -ge 7 ]
 do
@@ -28,9 +29,9 @@ do
         [ $? -eq 0 ] && break
         n=$[$n+1]
         sleep 3
-   done
-/usr/local/zend/bin/zs-manage  restart-php -N $adminKey -K $adminKeyHash
-#php bin/zs-client.php installApp --zpk="<location-of-the-zpk-file>" --target="<the-name-of-the-target>" --baseUri="<baseUri>"
+done
+set -e
+#/usr/local/zend/bin/zs-manage  restart-php -N $adminKey -K $adminKeyHash
 open-port 80
 open-port 443
 open-port 10082

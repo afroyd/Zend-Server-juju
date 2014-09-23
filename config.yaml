@@ -25,5 +25,19 @@ options:
     description: "Zend server License key matching the order number"
   production:
     type: boolean
-    default: false
+    default: true 
     description: "set to true to get production settings. False will give you development settings and will enable Z-ray by default"
+  installMagento:
+    type: boolean
+    default: true
+    description: "Set to true if you'd like to install Magento"
+  installWordpress:
+    type: boolean
+    default: false
+    description: "Set to true if you'd like to install Wordpress"
+  installDemoApp:
+    type: boolean
+    default: false
+    description: "Set to true if you'd like to install Zend Server demo app that genrerates events and statistics in the dashboard"
+
+

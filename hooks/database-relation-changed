@@ -8,6 +8,9 @@ adminKeyHash=`relation-get adminKeyHash`
 adminKey=`relation-get adminKey`
 magento_admin_password="1234"
 magento_admin_email="admin@localhost.com"
+installMagento=`config-get installMagento`
+installWordpress=`config-get installWordpress`
+installDemoApps=`config-get installDemoApps`
 port=80
 if [ -z "$adminKeyHash" ]; then
 	juju-log "No Zend server admin webapi key set by peer relation getting the key from the config"
@@ -19,7 +22,8 @@ if [ -z "$db_pass" ]; then
   exit 0
 fi
 sudo apt-get install mysql-client -y
-private_address=`unit-get private-address`
+#private_address=`unit-get private-address`
+private_address=`ip addr | grep 'state UP' -A2 | tail -n1 | awk '{print $2}' | cut -f1  -d'/'`
 public_address=`unit-get public-address`
 add_command="/usr/local/zend/bin/zs-manage server-add-to-cluster -n $JUJU_UNIT_NAME-$public_address -i $private_address  -o $db_host -u $db_user -p $db_pass -d ZendServer -r 60 -w 5 -s -N $adminKey -K $adminKeyHash"
 juju-log "adding ZS to cluster with $add_command"
@@ -32,21 +36,29 @@ then
 else
   juju-log "Enabling Zend server Session Clustering"
   /usr/local/zend/bin/zs-manage store-directive -d 'zend_sc.ha.use_broadcast' -v '0' -N "$adminKey" -K "$adminKeyHash"
-#  /usr/local/zend/bin/zs-manage store-directive -d 'session.save_handler' -v 'cluster' -N "$adminKey" -K "$adminKeyHash"
+  /usr/local/zend/bin/zs-manage store-directive -d 'session.save_handler' -v 'cluster' -N "$adminKey" -K "$adminKeyHash"
   /usr/local/zend/bin/zs-manage store-directive -d 'zend_sc.enable' -v '1' -N "$adminKey" -K "$adminKeyHash"
   juju-log "No Magento DB. Installing the apps"
-  app_url="http://$public_address/magento" 
-  sudo sed -i 's/memory_limit = .*M   /memory_limit = 789M   /g' /usr/local/zend/gui/lighttpd/etc/php-fcgi.ini
-  deploy="/usr/local/zend/bin/zs-manage app-deploy --pkgFile "files/magento-1.7.zpk" --baseUrl "$app_url" --userParams \"site_url="$app_url" db_host="$db_host" db_username="$db_user" db_password="$db_pass" db_name="magento" admin_password="$magento_admin_password"\"  -N $adminKey -K $adminKeyHash"
-  juju-log "deploying Magento application on Zend Server with $deploy command"
-  eval $deploy
-  sudo sed -i 's/memory_limit = .*M   /memory_limit = 128M   /g' /usr/local/zend/gui/lighttpd/etc/php-fcgi.ini
-  app_url="http://$public_address/wordpress"
-  deploy="/usr/local/zend/bin/zs-manage app-deploy --pkgFile "files/wordpress-3.9.1.zpk" --baseUrl "$app_url" --userParams \"site_url="$app_url" db_host="$db_host" db_username="$db_user" db_password="$db_pass" db_name="wordpress" admin_password="$magento_admin_password"\" -N $adminKey -K $adminKeyHash"
-  app_url="http://$public_address/demo"
-  juju-log "deploying $app_url  on Zend Server with $deploy command"
-  eval $deploy
-  deploy="/usr/local/zend/bin/zs-manage app-deploy --pkgFile "files/demo.zpk" --baseUrl "$app_url"  -N $adminKey -K $adminKeyHash"
-  juju-log "deploying demo application on Zend Server with $deploy command"
-  eval $deploy
+  juju-log "The configs: installMagento is $installMagento . InstallWordpress is $installWordpress . InstallDemoApp is $installDemoApp"
+  if [ "$installMagento" = "True" ]; then
+    app_url="http://$public_address/magento" 
+    sudo sed -i 's/memory_limit = .*M   /memory_limit = 789M   /g' /usr/local/zend/gui/lighttpd/etc/php-fcgi.ini
+    deploy="/usr/local/zend/bin/zs-manage app-deploy --pkgFile "files/magento-1.7.zpk" --baseUrl "$app_url" --userParams \"site_url="$app_url" db_host="$db_host" db_username="$db_user" db_password="$db_pass" db_name="magento" admin_password="$magento_admin_password"\"  -N $adminKey -K $adminKeyHash"
+    juju-log "deploying Magento application on Zend Server with $deploy command"
+    eval $deploy
+    sudo sed -i 's/memory_limit = .*M   /memory_limit = 128M   /g' /usr/local/zend/gui/lighttpd/etc/php-fcgi.ini
+  fi
+  if [ "$installWordpress" = "True" ]; then
+    app_url="http://$public_address/wordpress"
+    deploy="/usr/local/zend/bin/zs-manage app-deploy --pkgFile "files/wordpress-3.9.1.zpk" --baseUrl "$app_url" --userParams \"site_url="$app_url" db_host="$db_host" db_username="$db_user" db_password="$db_pass" db_name="wordpress" admin_password="$magento_admin_password"\" -N $adminKey -K $adminKeyHash"
+    juju-log "deploying $app_url  on Zend Server with $deploy command"
+    eval $deploy
+  fi
+  if [ "$installDemoApp" = "True" ]; then
+    app_url="http://$public_address/demo"
+    deploy="/usr/local/zend/bin/zs-manage app-deploy --pkgFile "files/demo.zpk" --baseUrl "$app_url"  -N $adminKey -K $adminKeyHash"
+    juju-log "deploying demo application on Zend Server with $deploy command"
+    eval $deploy
+  fi
 fi
+/usr/local/zend/bin/zs-manage  restart-php -N $adminKey -K $adminKeyHash
