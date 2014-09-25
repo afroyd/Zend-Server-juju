@@ -36,6 +36,6 @@ open-port 80
 open-port 443
 open-port 10082
 open-port 10081
-open-port 10060
-open-port 10063
-open-port 10070/udp
+#open-port 10060
+#open-port 10063
+#open-port 10070/udp

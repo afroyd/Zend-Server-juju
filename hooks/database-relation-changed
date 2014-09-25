@@ -11,6 +11,7 @@ magento_admin_email="admin@localhost.com"
 installMagento=`config-get installMagento`
 installWordpress=`config-get installWordpress`
 installDemoApps=`config-get installDemoApps`
+siteUrl=`config-get siteUrl`
 port=80
 if [ -z "$adminKeyHash" ]; then
 	juju-log "No Zend server admin webapi key set by peer relation getting the key from the config"
@@ -21,25 +22,30 @@ if [ -z "$db_pass" ]; then
   juju-log "No database information sent yet. Silently exiting"
   exit 0
 fi
+if [ -z "$siteUrl" ]; then
+	juju-log "No predefined site URL is defined using the local server public url"
+	public_address=`unit-get public-address`
+else
+	juju-log "Using the config option $siteUrl as the public address for the apps"
+	public_address=$siteUrl
+fi
 sudo apt-get install mysql-client -y
-#private_address=`unit-get private-address`
 private_address=`ip addr | grep 'state UP' -A2 | tail -n1 | awk '{print $2}' | cut -f1  -d'/'`
-public_address=`unit-get public-address`
-add_command="/usr/local/zend/bin/zs-manage server-add-to-cluster -n $JUJU_UNIT_NAME-$public_address -i $private_address  -o $db_host -u $db_user -p $db_pass -d ZendServer -r 60 -w 5 -s -N $adminKey -K $adminKeyHash"
+local_public_address=`unit-get public-address`
+add_command="/usr/local/zend/bin/zs-manage server-add-to-cluster -n $JUJU_UNIT_NAME-$local_public_address -i $private_address  -o $db_host -u $db_user -p $db_pass -d ZendServer -r 60 -w 5 -s -N $adminKey -K $adminKeyHash"
 juju-log "adding ZS to cluster with $add_command"
 eval $add_command
-juju-log "Adding vhost $public_address"
-/usr/local/zend/bin/zs-manage vhost-add -n $public_address -p $port -N $adminKey -K $adminKeyHash
 if [[ ! -z "`mysql -u"$db_user" -p"$db_pass" -h "$db_host" -qfsBe "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME='magento'" 2>&1`" ]];
 then
   juju-log "magento DATABASE ALREADY EXISTS will not proceed with installing apps"
 else
+  juju-log "Adding vhost $public_address"
+  /usr/local/zend/bin/zs-manage vhost-add -n $public_address -p $port -N $adminKey -K $adminKeyHash
   juju-log "Enabling Zend server Session Clustering"
   /usr/local/zend/bin/zs-manage store-directive -d 'zend_sc.ha.use_broadcast' -v '0' -N "$adminKey" -K "$adminKeyHash"
   /usr/local/zend/bin/zs-manage store-directive -d 'session.save_handler' -v 'cluster' -N "$adminKey" -K "$adminKeyHash"
   /usr/local/zend/bin/zs-manage store-directive -d 'zend_sc.enable' -v '1' -N "$adminKey" -K "$adminKeyHash"
   juju-log "No Magento DB. Installing the apps"
-  juju-log "The configs: installMagento is $installMagento . InstallWordpress is $installWordpress . InstallDemoApp is $installDemoApp"
   if [ "$installMagento" = "True" ]; then
     app_url="http://$public_address/magento" 
     sudo sed -i 's/memory_limit = .*M   /memory_limit = 789M   /g' /usr/local/zend/gui/lighttpd/etc/php-fcgi.ini

@@ -23,6 +23,10 @@ options:
     type: string
     default: "ICTO7340801G21B2611D1CB5FCC4DA78"
     description: "Zend server License key matching the order number"
+  siteUrl:
+    type: string
+    default: "ec2-54-190-111-36.us-west-2.compute.amazonaws.com"
+    description: "Site public url. Will create a vhost with this url and deploy the apps on it. If not specified, the public url of the local server will be used"
   production:
     type: boolean
     default: true 
