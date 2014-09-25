@@ -25,7 +25,7 @@ options:
     description: "Zend server License key matching the order number"
   siteUrl:
     type: string
-    default: "ec2-54-190-111-36.us-west-2.compute.amazonaws.com"
+    default: ""
     description: "Site public url. Will create a vhost with this url and deploy the apps on it. If not specified, the public url of the local server will be used"
   production:
     type: boolean
