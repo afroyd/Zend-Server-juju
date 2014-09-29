@@ -1,5 +1,5 @@
 #!/bin/bash
-set -e # If any command fails, stop execution of the hook with that error
+set -ex # If any command fails, stop execution of the hook with that error
 db_user=`relation-get user`
 #db_db=`relation-get database`
 db_pass=`relation-get password`
@@ -10,7 +10,7 @@ magento_admin_password="1234"
 magento_admin_email="admin@localhost.com"
 installMagento=`config-get installMagento`
 installWordpress=`config-get installWordpress`
-installDemoApp=`config-get installDemoApps`
+installDemoApp=`config-get installDemoApp`
 siteUrl=`config-get siteUrl`
 port=80
 if [ -z "$adminKeyHash" ]; then
@@ -36,6 +36,7 @@ local_public_address=`unit-get public-address`
 add_command="/usr/local/zend/bin/zs-manage server-add-to-cluster -n $JUJU_UNIT_NAME-$local_public_address -i $private_address  -o $db_host -u $db_user -p $db_pass -d ZendServer -r 60 -w 5 -s -N $adminKey -K $adminKeyHash"
 juju-log "adding ZS to cluster with $add_command"
 eval $add_command
+sed -i.bak '28i\PHP_INI=$ZCE_PREFIX/etc/php.ini' /usr/local/zend/bin/zs-manage
 if [[ ! -z $zs_db_exist ]];
 then
   juju-log "magento DATABASE ALREADY EXISTS will not proceed with installing apps"
