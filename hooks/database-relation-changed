@@ -39,7 +39,7 @@ eval $add_command
 sed -i.bak '28i\PHP_INI=$ZCE_PREFIX/etc/php.ini' /usr/local/zend/bin/zs-manage
 if [[ ! -z $zs_db_exist ]];
 then
-  juju-log "magento DATABASE ALREADY EXISTS will not proceed with installing apps"
+  juju-log "Zend Server DATABASE ALREADY EXISTS  will not proceed with installing apps as it should be installed with the first server that joined the cluster"
 else
 #  juju-log "Adding vhost $public_address"
 #  /usr/local/zend/bin/zs-manage vhost-add -n $public_address -p $port -N $adminKey -K $adminKeyHashi || true
