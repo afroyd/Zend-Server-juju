@@ -37,7 +37,7 @@ options:
     description: "Set to true if you'd like to install Magento"
   installWordpress:
     type: boolean
-    default: false
+    default: true 
     description: "Set to true if you'd like to install Wordpress"
   installDemoApp:
     type: boolean
