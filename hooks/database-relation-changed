@@ -56,13 +56,13 @@ else
   fi
   if [ "$installWordpress" = "True" ]; then
     app_url="http://$public_address/wordpress"
-    deploy="/usr/local/zend/bin/zs-manage app-deploy --pkgFile "files/wordpress-3.9.1.zpk" --baseUrl "$app_url" --userParams \"site_url="$app_url" db_host="$db_host" db_username="$db_user" db_password="$db_pass" db_name="wordpress" admin_password="$magento_admin_password"\" -N $adminKey -K $adminKeyHash"
+    deploy="/usr/local/zend/bin/zs-manage app-deploy --pkgFile "files/wordpress-3.9.1.zpk" --baseUrl "$app_url" --userParams \"site_url="$app_url" db_host="$db_host" db_username="$db_user" db_password="$db_pass" db_name="wordpress" admin_password="$magento_admin_password"\" --defaultServer TRUE -N $adminKey -K $adminKeyHash"
     juju-log "deploying $app_url  on Zend Server with $deploy command"
     eval $deploy
   fi
   if [ "$installDemoApp" = "True" ]; then
     app_url="http://$public_address/demo"
-    deploy="/usr/local/zend/bin/zs-manage app-deploy --pkgFile "files/demo.zpk" --baseUrl "$app_url"  -N $adminKey -K $adminKeyHash"
+    deploy="/usr/local/zend/bin/zs-manage app-deploy --pkgFile "files/demo.zpk" --baseUrl "$app_url" --defaultServer TRUE  -N $adminKey -K $adminKeyHash"
     juju-log "deploying demo application on Zend Server with $deploy command"
     eval $deploy
   fi
