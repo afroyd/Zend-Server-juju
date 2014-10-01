@@ -41,8 +41,8 @@ if [[ ! -z $zs_db_exist ]];
 then
   juju-log "Zend Server DATABASE ALREADY EXISTS  will not proceed with installing apps as it should be installed with the first server that joined the cluster"
 else
-#  juju-log "Adding vhost $public_address"
-#  /usr/local/zend/bin/zs-manage vhost-add -n $public_address -p $port -N $adminKey -K $adminKeyHashi || true
+  juju-log "Adding vhost $public_address"
+  /usr/local/zend/bin/zs-manage vhost-add -n $public_address -p $port -N $adminKey -K "$adminKeyHash"
   
   juju-log "Enabling Zend server Session Clustering"
   /usr/local/zend/bin/zs-manage store-directive -d 'zend_sc.ha.use_broadcast' -v '0' -N "$adminKey" -K "$adminKeyHash"
@@ -52,7 +52,7 @@ else
     app_url="http://$public_address/magento" 
 #    sudo sed -i 's/memory_limit = .*M   /memory_limit = 789M   /g' /usr/local/zend/etc/php.ini 
     sudo sed -i 's/memory_limit=.*M/memory_limit=800M/g' /usr/local/zend/etc/php.ini
-    deploy="/usr/local/zend/bin/zs-manage app-deploy --pkgFile "files/magento-1.7.zpk" --baseUrl "$app_url" --userParams \"site_url="$app_url" db_host="$db_host" db_username="$db_user" db_password="$db_pass" db_name="magento" admin_password="$magento_admin_password"\" --defaultServer TRUE  -N $adminKey -K $adminKeyHash"
+    deploy="/usr/local/zend/bin/zs-manage app-deploy --pkgFile "files/magento-1.7.zpk" --baseUrl "$app_url" --appName Magento --userParams \"site_url="$app_url" db_host="$db_host" db_username="$db_user" db_password="$db_pass" db_name="magento" admin_password="$magento_admin_password"\"   -N $adminKey -K $adminKeyHash"
     juju-log "deploying Magento application on Zend Server with $deploy command"
     eval $deploy
 #    sudo sed -i 's/memory_limit = .*M   /memory_limit = 128M   /g' /usr/local/zend/etc/php.ini
@@ -60,13 +60,13 @@ else
   fi
   if [ "$installWordpress" = "True" ]; then
     app_url="http://$public_address/wordpress"
-    deploy="/usr/local/zend/bin/zs-manage app-deploy --pkgFile "files/wordpress-3.9.1.zpk" --baseUrl "$app_url" --userParams \"site_url="$app_url" db_host="$db_host" db_username="$db_user" db_password="$db_pass" db_name="wordpress" admin_password="$magento_admin_password"\" --defaultServer TRUE -N $adminKey -K $adminKeyHash"
+    deploy="/usr/local/zend/bin/zs-manage app-deploy --pkgFile "files/wordpress-3.9.1.zpk" --baseUrl "$app_url" --appName Wordpress --userParams \"site_url="$app_url" db_host="$db_host" db_username="$db_user" db_password="$db_pass" db_name="wordpress" admin_password="$magento_admin_password"\" --defaultServer TRUE -N $adminKey -K $adminKeyHash"
     juju-log "deploying $app_url  on Zend Server with $deploy command"
     eval $deploy
   fi
   if [ "$installDemoApp" = "True" ]; then
     app_url="http://$public_address/demo"
-    deploy="/usr/local/zend/bin/zs-manage app-deploy --pkgFile "files/demo.zpk" --baseUrl "$app_url" --defaultServer TRUE  -N $adminKey -K $adminKeyHash"
+    deploy="/usr/local/zend/bin/zs-manage app-deploy --pkgFile "files/demo.zpk" --baseUrl "$app_url" --appName demoApp --defaultServer TRUE  -N $adminKey -K $adminKeyHash"
     juju-log "deploying demo application on Zend Server with $deploy command"
     eval $deploy
   fi
