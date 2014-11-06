@@ -30,6 +30,10 @@ Set the admin webapi key and gui password:
 
     juju set zend-server guiPassword=yourSecretPassword adminKeyHash=yourGenerated64CharactersLongApiKey
 
+Enable Z-Ray (for development only to use Z-ray in production enable secured mode in the gui):
+	
+    juju set zend-server zrayEnable=true
+
 To expose it to the internet:
 
     juju expose zend-server
@@ -37,7 +41,7 @@ To expose it to the internet:
 This will open port 80 (http) and 443 (https) for web traffic.
 It will also open the Zend server gui ports 10081 (http) and 10082 (https)
 
-Open the Admin gui and manage the PHP configuration, deploy more apps and see statistics and events from your site. 
+Open the Admin gui at http://<Server_IP>:10081/ZendServer and manage the PHP configuration, deploy more apps and see statistics and events from your site. 
 
 ## adding MySQL and cluster relation
     juju deploy mysql
