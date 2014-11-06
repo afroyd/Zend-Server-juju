@@ -3,7 +3,7 @@ summary: <Fill in summary here>
 maintainer: Amir Friedman <amir@zend.com>
 description: |
     This charm deploys Zend Server the integrated platform for mobile and web apps, helping in all phases of the application life cycle. What Zend Server Does: Helps developers write better code and solve issues long before their code reaches production (‘Left Shifting’). Automates all steps in the release of PHP applications, from code to production, including provisioning, versioning and rollback. Optimizes performance through dynamic scaling, code acceleration, code and data caching, job queuing and more. Helps to detect and fix production issues in applications, faster and with less disruption.
-categories:
+tags:
     - app-servers
 subordinate: false
 requires:

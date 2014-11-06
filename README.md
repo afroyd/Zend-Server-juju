@@ -15,7 +15,7 @@ What Zend Server Does:
 To deploy a Zend Server service:
 
 
-By default it will install Zend server . with Z-Ray disabled which is good for production. if you'd like to use it for development set the "zrayEnable:" config to true.
+By default it will install Zend server with Z-Ray disabled which is good for production. if you'd like to use it for development set the "zrayEnable:" config to true.
 
 Generate a gui admin api key hash. Should be 64 characters long string. You can generate it in bash with:
 
