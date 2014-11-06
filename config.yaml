@@ -2,7 +2,7 @@ options:
   adminKeyHash:
     type: string
     default: ""
-    description: "webapi key hash for communicating with the webapi"
+    description: "webapi key hash for communicating with the webapi. Cannot be changed after the setting it up"
   guiPassword: 
     type: string
     default: ""

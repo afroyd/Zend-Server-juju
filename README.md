@@ -58,3 +58,8 @@ After it is added to HAProxy you can add more Zend Server units with:
 
     juju add-unit  zend-server
 The next Zend server units will get all the apps and configuration from the other nodes. Every change in the PHP/Zend Server configuration done from the admin ui of a specific unit will be propagated to all the units.
+
+## Note about config changes:
+
+There is no way to change the webapi key after installation so changing the value will not affect the actual key.
+In cluster mode it is recommended not to change the Zend Server configs such as enable zray and password as each node will change the value in the MySQL. The best way is to log into the Zend Server admin gui on port 10081 or 10082 on one of the units and change. This will change it for all the units.
