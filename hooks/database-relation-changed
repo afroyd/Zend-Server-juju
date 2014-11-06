@@ -4,71 +4,20 @@ db_user=`relation-get user`
 #db_db=`relation-get database`
 db_pass=`relation-get password`
 db_host=`relation-get private-address`
-adminKeyHash=`relation-get adminKeyHash`
-adminKey=`relation-get adminKey`
-magento_admin_password="1234"
-magento_admin_email="admin@localhost.com"
-installMagento=`config-get installMagento`
-installWordpress=`config-get installWordpress`
-installDemoApp=`config-get installDemoApp`
-siteUrl=`config-get siteUrl`
-port=80
-if [ -z "$adminKeyHash" ]; then
-	juju-log "No Zend server admin webapi key set by peer relation getting the key from the config"
-	adminKey=`config-get adminKey`
-	adminKeyHash=`config-get adminKeyHash`
+zs_db_name="ZendServer"
+if    [ -z $db_pass ] |  [ -z $db_user ] | [ -z $db_host ] ; then
+	juju-log "Waiting for full credentials before proceeding with connecting ZS to Cluster"
+	exit 0
 fi
-if [ -z "$db_pass" ]; then
-  juju-log "No database information sent yet. Silently exiting"
-  exit 0
-fi
-if [ -z "$siteUrl" ]; then
-	juju-log "No predefined site URL is defined using the local server public url"
-	public_address=`unit-get public-address`
-else
-	juju-log "Using the config option $siteUrl as the public address for the apps"
-	public_address=$siteUrl
-fi
-sudo apt-get install mysql-client -y
-zs_db_exist="`mysql -u"$db_user" -p"$db_pass" -h "$db_host" -qfsBe "SELECT SCHEMA_NAME FROM INFORMATION_SCHEMA.SCHEMATA WHERE SCHEMA_NAME='ZendServer'" 2>&1`"
+echo "ZS_db_pass"=$db_pass >> ~/.ZendServerStatus
+echo "ZS_db_user"=$db_user >> ~/.ZendServerStatus
+echo "ZS_db_host"=$db_host >> ~/.ZendServerStatus
+echo "ZS_db_name"=$zs_db_name >> ~/.ZendServerStatus
 private_address=`ip addr | grep 'state UP' -A2 | tail -n1 | awk '{print $2}' | cut -f1  -d'/'`
-local_public_address=`unit-get public-address`
-add_command="/usr/local/zend/bin/zs-manage server-add-to-cluster -n $JUJU_UNIT_NAME-$local_public_address -i $private_address  -o $db_host -u $db_user -p $db_pass -d ZendServer -r 60 -w 5 -s -N $adminKey -K $adminKeyHash"
-juju-log "adding ZS to cluster with $add_command"
-eval $add_command
-sed -i.bak '28i\PHP_INI=$ZCE_PREFIX/etc/php.ini' /usr/local/zend/bin/zs-manage
-if [[ ! -z $zs_db_exist ]];
-then
-  juju-log "Zend Server DATABASE ALREADY EXISTS  will not proceed with installing apps as it should be installed with the first server that joined the cluster"
-else
-#  juju-log "Adding vhost $public_address"
-#  /usr/local/zend/bin/zs-manage vhost-add -n $public_address -p $port -N $adminKey -K "$adminKeyHash"
-  
-  juju-log "Enabling Zend server Session Clustering"
-  /usr/local/zend/bin/zs-manage store-directive -d 'zend_sc.ha.use_broadcast' -v '0' -N "$adminKey" -K "$adminKeyHash"
-  /usr/local/zend/bin/zs-manage store-directive -d 'session.save_handler' -v 'cluster' -N "$adminKey" -K "$adminKeyHash"
-  /usr/local/zend/bin/zs-manage store-directive -d 'zend_sc.enable' -v '1' -N "$adminKey" -K "$adminKeyHash"
-  if [ "$installMagento" = "True" ]; then
-    app_url="http://$public_address/magento" 
-#    sudo sed -i 's/memory_limit = .*M   /memory_limit = 789M   /g' /usr/local/zend/etc/php.ini 
-    sudo sed -i 's/memory_limit=.*M/memory_limit=800M/g' /usr/local/zend/etc/php.ini
-    deploy="/usr/local/zend/bin/zs-manage app-deploy --pkgFile "files/magento-1.7.zpk" --baseUrl "$app_url" --appName Magento --userParams \"site_url="$app_url" db_host="$db_host" db_username="$db_user" db_password="$db_pass" db_name="magento" admin_password="$magento_admin_password"\" --defaultServer TRUE  -N $adminKey -K $adminKeyHash"
-    juju-log "deploying Magento application on Zend Server with $deploy command"
-    eval $deploy
-#    sudo sed -i 's/memory_limit = .*M   /memory_limit = 128M   /g' /usr/local/zend/etc/php.ini
-    sudo sed -i 's/memory_limit=.*M/memory_limit=128M/g' /usr/local/zend/etc/php.ini
-  fi
-  if [ "$installWordpress" = "True" ]; then
-    app_url="http://$public_address/wordpress"
-    deploy="/usr/local/zend/bin/zs-manage app-deploy --pkgFile "files/wordpress-3.9.1.zpk" --baseUrl "$app_url" --appName Wordpress --userParams \"site_url="$app_url" db_host="$db_host" db_username="$db_user" db_password="$db_pass" db_name="wordpress" admin_password="$magento_admin_password"\" --defaultServer TRUE -N $adminKey -K $adminKeyHash"
-    juju-log "deploying $app_url  on Zend Server with $deploy command"
-    eval $deploy
-  fi
-  if [ "$installDemoApp" = "True" ]; then
-    app_url="http://$public_address/demo"
-    deploy="/usr/local/zend/bin/zs-manage app-deploy --pkgFile "files/demo.zpk" --baseUrl "$app_url" --appName demoApp --defaultServer TRUE  -N $adminKey -K $adminKeyHash"
-    juju-log "deploying demo application on Zend Server with $deploy command"
-    eval $deploy
-  fi
+. ~/.ZendServerStatus
+if   [ "$ZS_connected_to_cluster" != "true" ]; then
+        juju-log "Connecting Zend Server to cluster by adding it to MySQL"
+        /usr/local/zend/bin/zs-manage server-add-to-cluster -n $JUJU_UNIT_NAME-$local_public_address -i $private_address  -o $ZS_db_host -u $ZS_db_user -p $ZS_db_pass -d $ZS_db_name -r 60 -w 5 -s -N $ZS_api_key -K $ZS_api_key_hash
+        echo "ZS_connected_to_cluster=true" >> ~/.ZendServerStatus
 fi
-/usr/local/zend/bin/zs-manage  restart-php -N $adminKey -K $adminKeyHash
+

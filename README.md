@@ -14,20 +14,21 @@ What Zend Server Does:
 
 To deploy a Zend Server service:
 
-choose which PHP version to install by changing the charm's "phpVersion" config option. In Zend Server 7.1 it can be either 5.5 or 5.6 (default is 5.5).
 
-By default it will install Zend server in a production mode. If you'd like to use it for development set the "production" config to false.
+By default it will install Zend server . with Z-Ray disabled which is good for production. if you'd like to use it for development set the "zrayEnable:" config to true.
 
 Generate a gui admin api key hash. Should be 64 characters long string. You can generate it in bash with:
 
     date +%s | sha256sum | base64 | head -c 64
 
-If you have a dedicated site url set it in the "siteUrl" config. Alternately you can set it to your HAProxy public url if you are going to use HAProxy. You can leave it blank if this is a single server installation. 
 
 Deploy the charm:
 
     juju deploy zend-server
 
+Set the admin webapi key and gui password:
+
+    juju set zend-server guiPassword=yourSecretPassword adminKeyHash=yourGenerated64CharactersLongApiKey
 
 To expose it to the internet:
 
@@ -41,12 +42,8 @@ Open the Admin gui and manage the PHP configuration, deploy more apps and see st
 ## adding MySQL and cluster relation
     juju deploy mysql
     juju add-relation zend-server mysql 
-This will deploy the demo apps (not for production) if one of the following configs is set to true:
-- installMagento Will install Magento
-- installWordpress will install Wordpress
-- installDemoApp Will install Zend Server demo app which will populate the admin gui dashboard with sample statistics and events
 
-This relation will also move Zend Server's database from the local machine to MySQL and prepare it to function in a cluster
+This relation will move Zend Server's database from the local machine to MySQL and prepare it to function in a cluster
 
 ## Using Zend Server in a cluster with HAProxy:
 

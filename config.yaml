@@ -1,47 +1,13 @@
 options:
-  phpVersion:
-    type: string
-    default: "5.5"
-    description: "Zend server PHP version"
-  adminKey:
-    type: string
-    default: "adminKey"
-    description: "The gui webapi key with admin permissions that is added to the system and used to execute admin task like bootstrap and restart"
   adminKeyHash:
     type: string
-    default: "f13b874b8eac6aebb8f0244716f97dc02adf12bf10ced201771e755c4691923e"
+    default: ""
     description: "webapi key hash for communicating with the webapi"
   guiPassword: 
     type: string
-    default: "1234"
-    description: "password for the admin gui interface"
-  orderNumber:
-    type: string
-    default: "iic"
-    description: "order number matching the Zend server license key"
-  licenseKey:
-    type: string
-    default: "ICTO7340801G21B2611D1CB5FCC4DA78"
-    description: "Zend server License key matching the order number"
-  siteUrl:
-    type: string
     default: ""
-    description: "Site public url. Will create a vhost with this url and deploy the apps on it. If not specified, the public url of the local server will be used"
-  production:
+    description: "password for the admin gui interface"
+  zrayEnable:
     type: boolean
-    default: true 
-    description: "set to true to get production settings. False will give you development settings and will enable Z-ray by default"
-  installMagento:
-    type: boolean
-    default: true
-    description: "Set to true if you'd like to install Magento"
-  installWordpress:
-    type: boolean
-    default: true 
-    description: "Set to true if you'd like to install Wordpress"
-  installDemoApp:
-    type: boolean
-    default: true 
-    description: "Set to true if you'd like to install Zend Server demo app that genrerates events and statistics in the dashboard"
-
-
+    default: false
+    description: "Set to true to enable zray on each request"

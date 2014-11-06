@@ -1,41 +1,5 @@
 #!/bin/bash
-set -e # If any command fails, stop execution of the hook with that error
-phpVersion=`config-get phpVersion`
-adminKey=`config-get adminKey`
-adminKeyHash=`config-get adminKeyHash`
-guiPassword=`config-get guiPassword`
-orderNumber=`config-get orderNumber`
-licenseKey=`config-get licenseKey`
-production=`config-get production`
-if [ -z "$adminKeyHash" ]; then
-        adminKeyHash=`date +%s | sha256sum | base64 | head -c 64`
-        juju-log  --log-level WARNING "Missing web api key in config.yaml. Generated $adminKeyHash as the key. This is fine in single server scenario but will not work in clustered scenario"
-	relation-set -r $JUJU_RELATION_ID adminKeyHash=$adminKeyHash adminKey=$adminKey
-fi
-juju-log "using Zend server webapi key name '$adminKey' and webapi key hash $adminKeyHash"
-tar xzf files/repo_installer_early_access.tar.gz
-./install_zs.sh $phpVersion --automatic
-/usr/local/zend/bin/zs-manage api-keys-add-key -n $adminKey -s $adminKeyHash
-bootstrap="/usr/local/zend/bin/zs-manage bootstrap-single-server -p $guiPassword -a TRUE   -r $production "
-if [ -n "$licenseKey" ]; then
-	bootstrap="$bootstrap -o  $orderNumber -l $licenseKey"
-fi
-juju-log "Will bootstrap Zend server with $bootstrap and retry"
-set +e
-n=0
-until [ $n -ge 7 ]
-do
-	eval $bootstrap
-        [ $? -eq 0 ] && break
-        n=$[$n+1]
-        sleep 3
-done
-set -e
-#/usr/local/zend/bin/zs-manage  restart-php -N $adminKey -K $adminKeyHash
-open-port 80
-open-port 443
-open-port 10082
-open-port 10081
-#open-port 10060
-#open-port 10063
-#open-port 10070/udp
+set -ex # If any command fails, stop execution of the hook with that error
+echo "ZS_installed=false" >> ~/.ZendServerStatus
+#tar xzf files/repo_installer_early_access.tar.gz
+tar xzf files/repo_installer_beta.tar.gz

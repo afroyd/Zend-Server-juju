@@ -1,9 +1,53 @@
 #!/bin/bash
-set -e # If any command fails, stop execution of the hook with that error
-adminKey=`config-get adminKey`
+set -ex # If any command fails, stop execution of the hook with that error
+. ~/.ZendServerStatus
+phpVersion="5.5"
+adminKey="adminKey"
 adminKeyHash=`config-get adminKeyHash`
-#/usr/local/zend/bin/zs-manage  restart-php -N $adminKey -K $adminKeyHash
-#php bin/zs-client.php installApp --zpk="<location-of-the-zpk-file>" --target="<the-name-of-the-target>" --baseUri="<baseUri>"
-#open-port 80
-#open-port 10082
-#open-port 10081
+guiPassword=`config-get guiPassword`
+zrayEnable=`config-get zrayEnable`
+production="true"
+private_address=`ip addr | grep 'state UP' -A2 | tail -n1 | awk '{print $2}' | cut -f1  -d'/'`
+if  [ "$ZS_installed" = "false" ]; then
+	./install_zs.sh $phpVersion --automatic
+	juju-log "Zend Server installed. Will now proceed to bootstrap if api key hash is available"
+	echo "ZS_installed=true" >> ~/.ZendServerStatus
+fi
+if [ -z "$adminKeyHash" ]; then
+   juju-log "Waiting for admin key hash to bootstrap Zend Server"
+   exit 0
+fi
+if    [ -z "$ZS_api_key_hash" ]; then
+	/usr/local/zend/bin/zs-manage api-keys-add-key -n $adminKey -s $adminKeyHash
+        echo "ZS_api_key_hash"=$adminKeyHash >> ~/.ZendServerStatus
+	echo "ZS_api_key"=$adminKey >> ~/.ZendServerStatus
+fi
+if    [ -z "$ZS_bootstrapped" ] && [ ! -z $guiPassword  ]; then
+	/usr/local/zend/bin/zs-client.sh bootstrapSingleServer --adminPassword=$guiPassword --production=true --acceptEula --wait
+	#/usr/local/zend/bin/zs-manage bootstrap-single-server --adminPassword $guiPassword --acceptEula true
+	echo "ZS_bootstrapped=true" >> ~/.ZendServerStatus
+	echo "ZS_guiPassword=$guiPassword" >> ~/.ZendServerStatus	
+	echo "ZS_zrayEnabled=False" >> ~/.ZendServerStatus
+	open-port 80
+	open-port 443
+	open-port 10082
+	open-port 10081
+	restart=true
+fi
+if    [  "$ZS_bootstrapped" = "true" ] && [ "$guiPassword" != $ZS_guiPassword ]; then
+	/usr/local/zend/bin/zs-client.sh userSetPassword --username admin --password="$ZS_guiPassword" --newPassword="$guiPassword" --confirmNewPassword="$guiPassword" --zskey="$adminKey" --zssecret="$adminKeyHash"
+	echo "ZS_guiPassword=$guiPassword" >> ~/.ZendServerStatus
+fi
+if    [  "$ZS_bootstrapped" = "true" ] && [ "$ZS_zrayEnabled" != $zrayEnable ]; then
+	if [  "${zrayEnable,,}" = "true" ]; then
+		enabled="1"
+	else
+		enabled="0"
+	fi
+	/usr/local/zend/bin/zs-manage store-directive -d 'zray.enable' -v $enabled -N "$adminKey" -K "$adminKeyHash"
+	echo "ZS_zrayEnabled=$zrayEnable" >> ~/.ZendServerStatus
+	restart=true
+fi
+if [ "$restart" = "true" ]; then
+	/usr/local/zend/bin/zs-manage restart-php -N $adminKey -K $adminKeyHash
+fi
