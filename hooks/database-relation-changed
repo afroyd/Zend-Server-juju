@@ -5,7 +5,7 @@ db_user=`relation-get user`
 db_pass=`relation-get password`
 db_host=`relation-get private-address`
 zs_db_name="ZendServer"
-if    [ -z $db_pass ] |  [ -z $db_user ] | [ -z $db_host ] ; then
+if    [ -z $db_pass ] ||  [ -z $db_user ] || [ -z $db_host ] ; then
 	juju-log "Waiting for full credentials before proceeding with connecting ZS to Cluster"
 	exit 0
 fi

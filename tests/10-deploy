@@ -3,7 +3,7 @@
 import amulet
 import requests
 zs_configuration = {
-    'adminKeyHash': '0123456789012345678901234567890123456789012345678901234567890123',
+    'adminKeyHash': 'Z123456789012345678901234567890123456789012345678901234567890123',
     'guiPassword': 'zsGuiPass'
 }
 d = amulet.Deployment()
