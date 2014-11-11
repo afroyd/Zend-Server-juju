@@ -12,6 +12,7 @@ d.add('zend-server')
 d.add('mysql')
 d.expose('zend-server')
 d.configure('zend-server',zs_configuration)
+d.configure('mysql', {'dataset-size':'512M'})
 d.relate('zend-server:database', 'mysql:db-admin')
 try:
     d.setup(timeout=1100)
