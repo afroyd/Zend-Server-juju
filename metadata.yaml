@@ -1,8 +1,13 @@
 name: zend-server
-summary: <Fill in summary here>
+summary: Zend Server is the integrated PHP application platform 
 maintainer: Amir Friedman <amir@zend.com>
 description: |
-    This charm deploys Zend Server the integrated platform for mobile and web apps, helping in all phases of the application life cycle. What Zend Server Does: Helps developers write better code and solve issues long before their code reaches production (‘Left Shifting’). Automates all steps in the release of PHP applications, from code to production, including provisioning, versioning and rollback. Optimizes performance through dynamic scaling, code acceleration, code and data caching, job queuing and more. Helps to detect and fix production issues in applications, faster and with less disruption.
+    What Zend Server Does:
+    - Helps developers write better code and solve issues long before their code reaches production (‘Left Shifting’).
+    - Automates all steps in the release of PHP applications, from code to production, including provisioning, versioning and rollback.
+    - Optimizes performance through dynamic scaling, code acceleration, code and data caching, job queuing and more.
+    - Helps to detect and fix production issues in applications, faster and with less disruption.
+    - See README for how to deploy. Use the regular Apache htdocs for basic PHP usage. Log into the Zend Server gui at http://<Server_IP>:10081/ZendServer for advanced usage.
 tags:
     - app-servers
 subordinate: false
