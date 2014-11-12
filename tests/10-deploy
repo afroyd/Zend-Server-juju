@@ -6,7 +6,7 @@ zs_configuration = {
     'adminKeyHash': 'Z123456789012345678901234567890123456789012345678901234567890123',
     'guiPassword': 'zsGuiPass'
 }
-d = amulet.Deployment()
+d = amulet.Deployment(series='trusty')
 
 d.add('zend-server')
 d.add('mysql')
